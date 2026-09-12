@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EDEP - Cronómetro & Cadencia</title>
+  <title>EDEP - Cronómetro & Cadencia (2 Toques)</title>
   <style>
     :root {
       --bg-color: #0d1117;
@@ -190,7 +190,7 @@
     <div class="speed-display"><span id="speed-val">0.0</span> <span style="font-size: 1rem; color: var(--text-muted);">km/h</span></div>
   </section>
 
-  <!-- 3. CALCULADORA DE CADENCIA (PPM) -->
+  <!-- 3. CALCULADORA DE CADENCIA (2 TOQUES = 1 PALADA) -->
   <main class="cadence-section">
     <div class="ppm-display-container">
       <div class="section-title">Frecuencia de Paladas</div>
@@ -198,11 +198,11 @@
       <div class="ppm-unit">PALADAS / MINUTO</div>
     </div>
 
-    <div class="cycle-info" id="cycle-status">Toca para iniciar el ciclo (Palada 1/4)</div>
+    <div class="cycle-info" id="cycle-status">Toca para iniciar el ciclo</div>
 
     <button class="paddle-btn" id="btn-paddle">
       <span>TOCAR PALADA</span>
-      <span class="paddle-subtext" id="btn-subtext">PALADA 1 DE 4</span>
+      <span class="paddle-subtext" id="btn-subtext">INICIAR CICLO</span>
     </button>
   </main>
 
@@ -286,6 +286,7 @@
       speedVal.textContent = "N/D";
     }
 
+    // --- LÓGICA DE CADENCIA DE 2 TOQUES (1 PALADA) ---
     let paddleTouches = 0;
     let cycleStartTime = 0;
 
@@ -301,25 +302,21 @@
       if (paddleTouches === 1) {
         cycleStartTime = performance.now();
         btnPaddle.classList.add('active-cycle');
-        cycleStatus.textContent = "Ciclo en progreso...";
-        btnSubtext.textContent = "PALADA 2 DE 4";
+        cycleStatus.textContent = "Cronometrando palada...";
+        btnSubtext.textContent = "FINALIZAR CICLO (2/2)";
       } else if (paddleTouches === 2) {
-        btnSubtext.textContent = "PALADA 3 DE 4";
-      } else if (paddleTouches === 3) {
-        btnSubtext.textContent = "PALADA 4 DE 4 (FINALIZAR)";
-      } else if (paddleTouches === 4) {
         const cycleEndTime = performance.now();
         const durationSeconds = (cycleEndTime - cycleStartTime) / 1000;
 
         if (durationSeconds > 0) {
-          const ppm = Math.round((3 / durationSeconds) * 60);
+          const ppm = Math.round((1 / durationSeconds) * 60);
           ppmVal.textContent = ppm;
-          cycleStatus.textContent = `Último ciclo: ${durationSeconds.toFixed(2)}s (${ppm} PPM)`;
+          cycleStatus.textContent = `Última palada: ${durationSeconds.toFixed(2)}s (${ppm} PPM)`;
         }
 
         paddleTouches = 0;
         btnPaddle.classList.remove('active-cycle');
-        btnSubtext.textContent = "PALADA 1 DE 4";
+        btnSubtext.textContent = "INICIAR CICLO (1/2)";
       }
     });
   </script>
