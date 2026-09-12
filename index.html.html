@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDEP - Cronómetro & Cadencia</title>
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --card-bg: #161b22;
+      --border-color: #30363d;
+      --text-color: #f0f6fc;
+      --text-muted: #8b949e;
+      --accent-green: #238636;
+      --accent-orange: #d97706;
+      --accent-blue: #1f6feb;
+      --highlight: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 12px;
+      justify-content: space-between;
+    }
+
+    .header-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .timer-display {
+      font-family: monospace;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--text-color);
+      letter-spacing: -1px;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn-small {
+      flex: 1;
+      padding: 8px 0;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: white;
+    }
+
+    .btn-start { background-color: var(--accent-green); }
+    .btn-pause { background-color: var(--accent-orange); }
+    .btn-reset { background-color: var(--border-color); color: var(--text-color); }
+
+    .speed-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .speed-display {
+      font-family: monospace;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--highlight);
+    }
+
+    .cadence-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      flex-grow: 1;
+      justify-content: space-between;
+    }
+
+    .ppm-display-container {
+      text-align: center;
+    }
+
+    .ppm-value {
+      font-size: 4.5rem;
+      font-weight: 900;
+      line-height: 1;
+      color: #ffffff;
+    }
+
+    .ppm-unit {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--highlight);
+    }
+
+    .cycle-info {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      min-height: 24px;
+      font-weight: 600;
+    }
+
+    .paddle-btn {
+      width: 100%;
+      height: 180px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent-blue), #0b4fbf);
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(31, 111, 235, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .paddle-btn.active-cycle {
+      background: linear-gradient(135deg, var(--accent-orange), #b45309);
+      box-shadow: 0 8px 20px rgba(217, 119, 6, 0.4);
+    }
+
+    .paddle-subtext {
+      font-size: 0.85rem;
+      font-weight: 600;
+      opacity: 0.8;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. CRONÓMETRO GENERAL -->
+  <header class="header-section">
+    <div class="section-title">Tiempo Transcurrido</div>
+    <div class="timer-display" id="timer">00:00:00</div>
+    <div class="timer-controls">
+      <button class="btn-small btn-start" id="btn-timer-start">INICIAR</button>
+      <button class="btn-small btn-reset" id="btn-timer-reset">REINICIAR</button>
+    </div>
+  </header>
+
+  <!-- 2. VELOCIDAD GPS -->
+  <section class="speed-section">
+    <div class="section-title">Velocidad Actual</div>
+    <div class="speed-display"><span id="speed-val">0.0</span> <span style="font-size: 1rem; color: var(--text-muted);">km/h</span></div>
+  </section>
+
+  <!-- 3. CALCULADORA DE CADENCIA (PPM) -->
+  <main class="cadence-section">
+    <div class="ppm-display-container">
+      <div class="section-title">Frecuencia de Paladas</div>
+      <div class="ppm-value" id="ppm-val">--</div>
+      <div class="ppm-unit">PALADAS / MINUTO</div>
+    </div>
+
+    <div class="cycle-info" id="cycle-status">Toca para iniciar el ciclo (Palada 1/4)</div>
+
+    <button class="paddle-btn" id="btn-paddle">
+      <span>TOCAR PALADA</span>
+      <span class="paddle-subtext" id="btn-subtext">PALADA 1 DE 4</span>
+    </button>
+  </main>
+
+  <script>
+    function vibrate(ms = 40) {
+      if ('vibrate' in navigator) {
+        navigator.vibrate(ms);
+      }
+    }
+
+    let timerInterval = null;
+    let timerStartTime = 0;
+    let timerElapsedTime = 0;
+    let isTimerRunning = false;
+
+    const timerDisplay = document.getElementById('timer');
+    const btnTimerStart = document.getElementById('btn-timer-start');
+    const btnTimerReset = document.getElementById('btn-timer-reset');
+
+    function updateTimerDisplay() {
+      const totalMs = timerElapsedTime + (isTimerRunning ? Date.now() - timerStartTime : 0);
+      const mins = Math.floor(totalMs / 60000);
+      const secs = Math.floor((totalMs % 60000) / 1000);
+      const centis = Math.floor((totalMs % 1000) / 10);
+
+      const format = (n) => String(n).padStart(2, '0');
+      timerDisplay.textContent = `${format(mins)}:${format(secs)}:${format(centis)}`;
+    }
+
+    btnTimerStart.addEventListener('click', () => {
+      vibrate(30);
+      if (!isTimerRunning) {
+        isTimerRunning = true;
+        timerStartTime = Date.now();
+        timerInterval = setInterval(updateTimerDisplay, 30);
+        btnTimerStart.textContent = "PAUSAR";
+        btnTimerStart.className = "btn-small btn-pause";
+      } else {
+        isTimerRunning = false;
+        timerElapsedTime += Date.now() - timerStartTime;
+        clearInterval(timerInterval);
+        btnTimerStart.textContent = "CONTINUAR";
+        btnTimerStart.className = "btn-small btn-start";
+      }
+    });
+
+    btnTimerReset.addEventListener('click', () => {
+      vibrate(50);
+      isTimerRunning = false;
+      clearInterval(timerInterval);
+      timerElapsedTime = 0;
+      updateTimerDisplay();
+      btnTimerStart.textContent = "INICIAR";
+      btnTimerStart.className = "btn-small btn-start";
+    });
+
+    const speedVal = document.getElementById('speed-val');
+
+    if ('geolocation' in navigator) {
+      navigator.geolocation.watchPosition(
+        (position) => {
+          const speedMS = position.coords.speed;
+          if (speedMS !== null && !isNaN(speedMS) && speedMS >= 0) {
+            const speedKMH = (speedMS * 3.6).toFixed(1);
+            speedVal.textContent = speedKMH;
+          } else {
+            speedVal.textContent = "0.0";
+          }
+        },
+        (error) => {
+          console.warn("Error en GPS:", error.message);
+          speedVal.textContent = "0.0";
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 1000,
+          timeout: 5000
+        }
+      );
+    } else {
+      speedVal.textContent = "N/D";
+    }
+
+    let paddleTouches = 0;
+    let cycleStartTime = 0;
+
+    const btnPaddle = document.getElementById('btn-paddle');
+    const btnSubtext = document.getElementById('btn-subtext');
+    const ppmVal = document.getElementById('ppm-val');
+    const cycleStatus = document.getElementById('cycle-status');
+
+    btnPaddle.addEventListener('click', () => {
+      vibrate(60);
+      paddleTouches++;
+
+      if (paddleTouches === 1) {
+        cycleStartTime = performance.now();
+        btnPaddle.classList.add('active-cycle');
+        cycleStatus.textContent = "Ciclo en progreso...";
+        btnSubtext.textContent = "PALADA 2 DE 4";
+      } else if (paddleTouches === 2) {
+        btnSubtext.textContent = "PALADA 3 DE 4";
+      } else if (paddleTouches === 3) {
+        btnSubtext.textContent = "PALADA 4 DE 4 (FINALIZAR)";
+      } else if (paddleTouches === 4) {
+        const cycleEndTime = performance.now();
+        const durationSeconds = (cycleEndTime - cycleStartTime) / 1000;
+
+        if (durationSeconds > 0) {
+          const ppm = Math.round((3 / durationSeconds) * 60);
+          ppmVal.textContent = ppm;
+          cycleStatus.textContent = `Último ciclo: ${durationSeconds.toFixed(2)}s (${ppm} PPM)`;
+        }
+
+        paddleTouches = 0;
+        btnPaddle.classList.remove('active-cycle');
+        btnSubtext.textContent = "PALADA 1 DE 4";
+      }
+    });
+  </script>
+</body>
+</html>
