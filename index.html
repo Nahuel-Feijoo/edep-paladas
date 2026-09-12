@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EDEP - Cronómetro & Cadencia (2 Toques)</title>
+  <title>EDEP - Cronómetro & Cadencia (3 Paladas / 2 Toques)</title>
   <style>
     :root {
       --bg-color: #0d1117;
@@ -14,6 +14,7 @@
       --accent-green: #238636;
       --accent-orange: #d97706;
       --accent-blue: #1f6feb;
+      --accent-red: #da3633;
       --highlight: #38bdf8;
     }
 
@@ -42,11 +43,18 @@
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      padding: 12px 16px;
+      padding: 10px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+    }
+
+    .section-title-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
     }
 
     .section-title {
@@ -57,9 +65,21 @@
       font-weight: 700;
     }
 
+    .btn-reset-icon {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+    .btn-reset-icon:active {
+      color: var(--accent-red);
+    }
+
     .timer-display {
       font-family: monospace;
-      font-size: 2.2rem;
+      font-size: 2rem;
       font-weight: 800;
       color: var(--text-color);
       letter-spacing: -1px;
@@ -73,11 +93,11 @@
 
     .btn-small {
       flex: 1;
-      padding: 8px 0;
+      padding: 6px 0;
       border: none;
       border-radius: 6px;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       cursor: pointer;
       color: white;
     }
@@ -90,7 +110,7 @@
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      padding: 12px 16px;
+      padding: 8px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -98,7 +118,7 @@
 
     .speed-display {
       font-family: monospace;
-      font-size: 2.2rem;
+      font-size: 1.8rem;
       font-weight: 800;
       color: var(--highlight);
     }
@@ -107,47 +127,78 @@
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 16px;
-      padding: 16px;
+      padding: 12px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       flex-grow: 1;
       justify-content: space-between;
     }
 
     .ppm-display-container {
       text-align: center;
+      width: 100%;
     }
 
     .ppm-value {
-      font-size: 4.5rem;
+      font-size: 3.8rem;
       font-weight: 900;
       line-height: 1;
       color: #ffffff;
     }
 
     .ppm-unit {
-      font-size: 1.2rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--highlight);
     }
 
-    .cycle-info {
-      font-size: 0.95rem;
+    .history-box {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      min-height: 85px;
+    }
+
+    .history-title {
+      font-size: 0.7rem;
       color: var(--text-muted);
-      min-height: 24px;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .history-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .history-item {
+      font-size: 0.82rem;
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-color);
       font-weight: 600;
+    }
+
+    .history-item:first-child {
+      color: var(--highlight);
+      font-weight: 800;
     }
 
     .paddle-btn {
       width: 100%;
-      height: 180px;
+      height: 140px;
       border-radius: 16px;
       border: none;
       background: linear-gradient(135deg, var(--accent-blue), #0b4fbf);
       color: white;
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: 900;
       letter-spacing: 1px;
       cursor: pointer;
@@ -156,7 +207,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
     }
 
     .paddle-btn.active-cycle {
@@ -165,9 +216,9 @@
     }
 
     .paddle-subtext {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
-      opacity: 0.8;
+      opacity: 0.85;
       text-transform: uppercase;
     }
   </style>
@@ -187,22 +238,31 @@
   <!-- 2. VELOCIDAD GPS -->
   <section class="speed-section">
     <div class="section-title">Velocidad Actual</div>
-    <div class="speed-display"><span id="speed-val">0.0</span> <span style="font-size: 1rem; color: var(--text-muted);">km/h</span></div>
+    <div class="speed-display"><span id="speed-val">0.0</span> <span style="font-size: 0.9rem; color: var(--text-muted);">km/h</span></div>
   </section>
 
-  <!-- 3. CALCULADORA DE CADENCIA (2 TOQUES = 1 PALADA) -->
+  <!-- 3. CALCULADORA DE CADENCIA -->
   <main class="cadence-section">
     <div class="ppm-display-container">
-      <div class="section-title">Frecuencia de Paladas</div>
+      <div class="section-title-container">
+        <span class="section-title">Frecuencia de Paladas</span>
+        <button class="btn-reset-icon" id="btn-reset-ppm" title="Reiniciar paladas">↺ Borrar</button>
+      </div>
       <div class="ppm-value" id="ppm-val">--</div>
       <div class="ppm-unit">PALADAS / MINUTO</div>
     </div>
 
-    <div class="cycle-info" id="cycle-status">Toca para iniciar el ciclo</div>
+    <!-- HISTORIAL DE ÚLTIMAS 5 MEDIDAS -->
+    <div class="history-box">
+      <div class="history-title">Últimas 5 mediciones (Ciclos de 3 paladas):</div>
+      <ul class="history-list" id="history-list">
+        <li style="color: var(--text-muted); font-size: 0.8rem;">Sin datos aún</li>
+      </ul>
+    </div>
 
     <button class="paddle-btn" id="btn-paddle">
       <span>TOCAR PALADA</span>
-      <span class="paddle-subtext" id="btn-subtext">INICIAR CICLO</span>
+      <span class="paddle-subtext" id="btn-subtext">INICIAR (PALADA 1)</span>
     </button>
   </main>
 
@@ -213,6 +273,7 @@
       }
     }
 
+    // --- 1. CRONÓMETRO GENERAL ---
     let timerInterval = null;
     let timerStartTime = 0;
     let timerElapsedTime = 0;
@@ -259,6 +320,7 @@
       btnTimerStart.className = "btn-small btn-start";
     });
 
+    // --- 2. GEOLOCALIZACIÓN ---
     const speedVal = document.getElementById('speed-val');
 
     if ('geolocation' in navigator) {
@@ -266,58 +328,86 @@
         (position) => {
           const speedMS = position.coords.speed;
           if (speedMS !== null && !isNaN(speedMS) && speedMS >= 0) {
-            const speedKMH = (speedMS * 3.6).toFixed(1);
-            speedVal.textContent = speedKMH;
+            speedVal.textContent = (speedMS * 3.6).toFixed(1);
           } else {
             speedVal.textContent = "0.0";
           }
         },
         (error) => {
-          console.warn("Error en GPS:", error.message);
           speedVal.textContent = "0.0";
         },
-        {
-          enableHighAccuracy: true,
-          maximumAge: 1000,
-          timeout: 5000
-        }
+        { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
       );
     } else {
       speedVal.textContent = "N/D";
     }
 
-    // --- LÓGICA DE CADENCIA DE 2 TOQUES (1 PALADA) ---
+    // --- 3. LÓGICA DE CADENCIA (2 TOQUES = 3 INTERVALOS DE PALADA) ---
     let paddleTouches = 0;
     let cycleStartTime = 0;
+    let history = [];
 
     const btnPaddle = document.getElementById('btn-paddle');
     const btnSubtext = document.getElementById('btn-subtext');
     const ppmVal = document.getElementById('ppm-val');
-    const cycleStatus = document.getElementById('cycle-status');
+    const historyList = document.getElementById('history-list');
+    const btnResetPpm = document.getElementById('btn-reset-ppm');
+
+    function renderHistory() {
+      if (history.length === 0) {
+        historyList.innerHTML = '<li style="color: var(--text-muted); font-size: 0.8rem;">Sin datos aún</li>';
+        return;
+      }
+
+      historyList.innerHTML = history.map((item, index) => `
+        <li class="history-item">
+          <span>#${history.length - index} • ${item.time}s (3 paladas)</span>
+          <span>${item.ppm} PPM</span>
+        </li>
+      `).join('');
+    }
 
     btnPaddle.addEventListener('click', () => {
       vibrate(60);
       paddleTouches++;
 
       if (paddleTouches === 1) {
+        // 1er toque de la app = 1er palazo del palista en el agua
         cycleStartTime = performance.now();
         btnPaddle.classList.add('active-cycle');
-        cycleStatus.textContent = "Cronometrando palada...";
-        btnSubtext.textContent = "FINALIZAR CICLO (2/2)";
+        btnSubtext.textContent = "FINALIZAR (PALADA 4)";
       } else if (paddleTouches === 2) {
+        // 2do toque de la app = 4to palazo del palista (transcurrieron 3 paladas completas)
         const cycleEndTime = performance.now();
         const durationSeconds = (cycleEndTime - cycleStartTime) / 1000;
 
         if (durationSeconds > 0) {
-          const ppm = Math.round((1 / durationSeconds) * 60);
+          // Cálculo correcto: 3 paladas completadas en este tiempo
+          const ppm = Math.round((3 / durationSeconds) * 60);
           ppmVal.textContent = ppm;
-          cycleStatus.textContent = `Última palada: ${durationSeconds.toFixed(2)}s (${ppm} PPM)`;
+
+          history.unshift({ ppm: ppm, time: durationSeconds.toFixed(2) });
+          if (history.length > 5) {
+            history.pop();
+          }
+
+          renderHistory();
         }
 
         paddleTouches = 0;
         btnPaddle.classList.remove('active-cycle');
-        btnSubtext.textContent = "INICIAR CICLO (1/2)";
+        btnSubtext.textContent = "INICIAR (PALADA 1)";
       }
+    });
+
+    btnResetPpm.addEventListener('click', () => {
+      vibrate(50);
+      paddleTouches = 0;
+      history = [];
+      ppmVal.textContent = "--";
+      btnPaddle.classList.remove('active-cycle');
+      btnSubtext.textContent = "INICIAR (PALADA 1)";
+      renderHistory();
     });
   </script>
 </body>
